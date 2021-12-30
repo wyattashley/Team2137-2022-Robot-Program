@@ -4,6 +4,7 @@ import com.ctre.phoenix.sensors.PigeonIMU;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.functions.io.FileLogger;
+import frc.robot.functions.io.xmlreader.Device;
 import frc.robot.functions.io.xmlreader.Motor;
 import frc.robot.functions.io.xmlreader.XMLSettingReader;
 import frc.robot.library.CANSubsystem;
@@ -16,7 +17,7 @@ import org.ejml.simple.SimpleMatrix;
 import static frc.robot.functions.io.xmlreader.Motor.MotorTypes.FALCON;
 import static frc.robot.functions.io.xmlreader.Motor.MotorTypes.NEO;
 
-public class SwerveDrivetrain extends SubsystemBase implements DriveTrain {
+public class SwerveDrivetrain extends Device implements DriveTrain {
 
     public SwerveModule leftFrontModule;
     public SwerveModule leftBackModule;
@@ -28,6 +29,7 @@ public class SwerveDrivetrain extends SubsystemBase implements DriveTrain {
     private PigeonIMU pigeonIMU;
 
     public SwerveDrivetrain(CANSubsystem canSubsystem, XMLSettingReader settings, FileLogger fileLogger) {
+        super("DriveTrain");
         try {
             if (canSubsystem.getName().equalsIgnoreCase("Swerve NEO")) {
                 leftFrontModule = new SwerveNEODriveModule(canSubsystem.getRequiredSubsystem("LeftFront", "SwerveModule"), settings);
@@ -54,6 +56,9 @@ public class SwerveDrivetrain extends SubsystemBase implements DriveTrain {
 //        pigeonIMU.configFactoryDefault();
 //        pigeonIMU.setFusedHeading(0);
     }
+
+    @Override
+    public void periodic() {}
 
     public SwerveModuleState[] calculateSwerveMotorSpeedsFieldCentric(double xMag, double yMag, double rMag, double trackWidth, double wheelBase, Constants.DriveControlType controlType) {
         return calculateSwerveMotorSpeeds(Constants.convertFrame(getAngle().getRadians(), Constants.createFrameMatrix(xMag, yMag, rMag)), trackWidth, wheelBase, controlType);

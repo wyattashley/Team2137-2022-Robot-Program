@@ -4,9 +4,12 @@ import edu.wpi.first.wpilibj.geometry.*;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.spline.PoseWithCurvature;
 import frc.robot.functions.splines.QuinticSpline;
+import frc.robot.functions.splines.VelocityGenerator;
 import frc.robot.library.Distance2d;
+import frc.robot.library.Speed2d;
 import frc.robot.library.Vector2d;
 
+import javax.swing.plaf.basic.BasicButtonUI;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,8 +41,18 @@ public class PurePursuitGenerator {
             System.out.print("(" + x.toPlainString() + ", " + y.toPlainString() + "), ");
         }
 
+        System.out.println();
+        VelocityGenerator velocityGenerator = new VelocityGenerator(tmp, Speed2d.fromFeetPerSecond(1), Speed2d.fromFeetPerSecond(.25), 1);
+        List<Speed2d> tmp2 = velocityGenerator.getSpeeds();
+        for(int i = 0; i < tmp2.size(); i++) {
+            BigDecimal r = BigDecimal.valueOf(tmp2.get(i).getValue());
+//            BigDecimal r = BigDecimal.valueOf(100 - (Math.abs(tmp.get(i).curvatureRadPerMeter / Math.PI) * 100));
+            BigDecimal x = BigDecimal.valueOf(tmp.get(i).poseMeters.getX());
+            System.out.print("(" + x.toPlainString() + ", " + r.toPlainString() + "), ");
+        }
+
 //        PurePursuitGenerator generator = new PurePursuitGenerator(list, Distance2d.fromUnit(Distance2d.DistanceUnits.INCH, 1.5));
-        PurePursuitGenerator generator = new PurePursuitGenerator(Distance2d.fromUnit(Distance2d.DistanceUnits.INCH, 1.5), spline.getSplinePoints());
+//        PurePursuitGenerator generator = new PurePursuitGenerator(Distance2d.fromUnit(Distance2d.DistanceUnits.INCH, 1.5), spline.getSplinePoints());
 
 //        generator.injectPoints(Distance2d.fromUnit(Distance2d.DistanceUnits.INCH, .25));
 //        generator.smoothPoints();
@@ -102,30 +115,6 @@ public class PurePursuitGenerator {
 
         Rotation2d rotation = new Rotation2d(lookAhead.getX() - currentPosition.getX(), lookAhead.getY() - currentPosition.getY());
         return new Transform2d(lookAhead, rotation);
-    }
-    
-    public void injectPoints(Distance2d waypointSpacing) {
-        List<Translation2d> newPoints = new ArrayList<>();
-
-        for(int i = 1; i < pointList.size(); i++) {
-            Translation2d startPoint = pointList.get(i - 1);
-            Translation2d finalPoint = pointList.get(i);
-
-            Vector2d vector2d = new Vector2d(
-                    Distance2d.fromUnit(Distance2d.DistanceUnits.INCH, finalPoint.getX() - startPoint.getX()),
-                    Distance2d.fromUnit(Distance2d.DistanceUnits.INCH, finalPoint.getY() - startPoint.getY()));
-
-            int injectionPointAmount = (int) (vector2d.magnitude() / waypointSpacing.getValue(Distance2d.DistanceUnits.INCH));
-            vector2d = vector2d.normalize().scale(waypointSpacing.getValue(Distance2d.DistanceUnits.INCH));
-
-            for(int a = 0; a < injectionPointAmount; a++) {
-                newPoints.add(new Translation2d(startPoint.getX() + (vector2d.getX().getValue(Distance2d.DistanceUnits.INCH) * a), startPoint.getY() + (vector2d.getY().getValue(Distance2d.DistanceUnits.INCH) * a)));
-            }
-        }
-
-        newPoints.add(pointList.get(pointList.size() - 1));
-
-        pointList = newPoints;
     }
 
     /**

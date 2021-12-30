@@ -1,17 +1,22 @@
 package frc.robot.functions.io.xmlreader;
 
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+//public class Device extends SubsystemBase {
 public class Device {
+
     private String strName;
 
     public Device(String name) {
         strName = name;
+        Robot.deviceCallList.add(this);
     }
 
     public Device(Element element) {
-        strName = getOrDefault(element, "Name", "Default");
+        this(getOrDefault(element, "Name", "Default"));
     }
 
     protected static String getOrDefault(Element element, String name, String defaultReturn) {
@@ -33,6 +38,10 @@ public class Device {
     @Override
     public String toString() {
         return "Name: " + strName;
+    }
+
+    public void periodic() {
+        Robot.deviceCallList.remove(this);
     }
 }
 

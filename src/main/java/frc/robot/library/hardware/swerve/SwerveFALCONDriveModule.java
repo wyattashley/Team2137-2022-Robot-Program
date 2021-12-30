@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.functions.io.xmlreader.Device;
 import frc.robot.functions.io.xmlreader.Encoder;
 import frc.robot.functions.io.xmlreader.Motor;
 import frc.robot.functions.io.xmlreader.XMLSettingReader;
@@ -18,7 +19,7 @@ import frc.robot.library.*;
 
 import static frc.robot.library.Constants.deadband;
 
-public class SwerveFALCONDriveModule extends SubsystemBase implements SwerveModule {
+public class SwerveFALCONDriveModule extends Device implements SwerveModule {
 
     private static final int intDriveVelocityPIDSlotID = 0;
     private static final int intDriveDistancePIDSlotID = 1;
@@ -32,12 +33,11 @@ public class SwerveFALCONDriveModule extends SubsystemBase implements SwerveModu
     private double dblWheelConversionValue = 0;
     private Speed2d mDriveVelocityGoal = new Speed2d(0);
     private Distance2d mDriveDistanceGoal = Distance2d.fromFeet(0);
-    private String name = "";
     private final Motor mDriveMotorObj;
     private Constants.DriveControlType mDriveControlType = Constants.DriveControlType.RAW;
 
     public SwerveFALCONDriveModule(String _name, Motor turn, Motor drive, Encoder encoder, XMLSettingReader settingReader) {
-        this.name = _name;
+        super(_name);
         this.mDriveMotorObj = drive;
 
         this.driveMotor = new TalonFX(drive.getCANID());
@@ -76,7 +76,7 @@ public class SwerveFALCONDriveModule extends SubsystemBase implements SwerveModu
                 settingReader);
     }
 
-    //@Override
+    @Override
     public void periodic() {
         Rotation2d wheelAngle;
         // prevents the module from doing a >90 degree flip to get to a target, instead reverse wheel direction
@@ -88,8 +88,9 @@ public class SwerveFALCONDriveModule extends SubsystemBase implements SwerveModu
         }
 
         double pidEffort = turningPID.calculate(getModuleAngle().getDegrees(), wheelAngle.getDegrees());
-        //double output = Math.signum(pidEffort) * Constants.Drivetrain.turningFeedForward * Math.abs(Math.signum(Util.deadband(turningPID.getPositionError(), 0.5))) + pidEffort;
-        double output = Math.signum(pidEffort) * Math.abs(Math.signum(deadband(turningPID.getPositionError(), 0.5))) + pidEffort;
+//        double output = Math.signum(pidEffort) * Constants.Drivetrain.turningFeedForward * Math.abs(Math.signum(Util.deadband(turningPID.getPositionError(), 0.5))) + pidEffort;
+//        double output = Math.signum(pidEffort) * Math.abs(Math.signum(turningPID.getPositionError())) + pidEffort;
+        double output = pidEffort;
 
         turningMotor.set(ControlMode.PercentOutput, output / 12);
 
@@ -100,7 +101,7 @@ public class SwerveFALCONDriveModule extends SubsystemBase implements SwerveModu
                 driveMotor.set(ControlMode.PercentOutput, output / 12);
                 break;
             case DISTANCE:
-                output = driveFeedForward.calculate(getDriveVelocity().getValue(Distance2d.DistanceUnits.METER, Time2d.TimeUnits.SECONDS)) +
+                output = driveFeedForward.calculate(getCurrentDrivePosition().getValue(Distance2d.DistanceUnits.METER)) +
                         drivePID.calculate(getCurrentDrivePosition().getValue(Distance2d.DistanceUnits.METER));
                 driveMotor.set(ControlMode.PercentOutput, output / 12);
                 break;
@@ -125,6 +126,7 @@ public class SwerveFALCONDriveModule extends SubsystemBase implements SwerveModu
         turnMotorSetpoint = angle;
         turningPID.calculate(angle.getDegrees());
     }
+
 
     /**
      * Sets the raw speed -1~1 to motor and disables Velocity and Distance

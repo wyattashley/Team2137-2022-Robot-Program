@@ -6,6 +6,9 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.functions.io.FileLogger;
 import frc.robot.functions.io.FileLogger.EventType;
 import frc.robot.functions.io.xmlreader.Step;
@@ -67,7 +70,6 @@ public class Autonomous implements OpMode {
     @Override
     public void periodic() {
         if (mCurrentActionSteps.size() == 0) {
-
             mCurrentActionSteps.add(mStepList.get(++mintCurrentStep)); //Add the next step
 
             for(int i = mintCurrentStep + 1; i < mStepList.size(); i++) {
@@ -113,6 +115,7 @@ public class Autonomous implements OpMode {
         }
     }
     //endregion
+
 
     //region Swerve Autonomous Commands
     /**

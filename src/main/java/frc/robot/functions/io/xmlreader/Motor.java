@@ -1,6 +1,7 @@
 package frc.robot.functions.io.xmlreader;
 
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.library.CANDevice;
 import frc.robot.library.Constants.PIDSlotIDOutOfRangeException;
 import org.w3c.dom.Element;
@@ -61,22 +62,21 @@ public class Motor extends CANDevice {
         NodeList tmpList = element.getElementsByTagName("PID");
         pidValues = new PID[NUMBEROFPIDSLOTS];
 
-        try {
-            for (int i = 0; i < tmpList.getLength(); i++) {
-                String value = ((Element) tmpList.item(i)).getAttribute("Slot");
-                int slotNumber = 0;
-                if(!value.equals(""))
-                    slotNumber = Integer.parseInt(value);
+        for (int i = 0; i < tmpList.getLength(); i++) {
+            String value = ((Element) tmpList.item(i)).getAttribute("Slot");
+            int slotNumber = 0;
 
-                if (slotNumber >= NUMBEROFPIDSLOTS) {
-                    throw new PIDSlotIDOutOfRangeException(getName());
-                } else {
-                    this.pidValues[slotNumber] = new PID((Element) tmpList.item(i));
-                }
+            if (!value.equals(""))
+                slotNumber = Integer.parseInt(value);
+            else
+                DriverStation.reportError("Null PID Slot Given", false);
 
+            if (slotNumber >= NUMBEROFPIDSLOTS) {
+//                throw new PIDSlotIDOutOfRangeException(getName());
+                DriverStation.reportError("PID Slot too large", false);
+            } else {
+                this.pidValues[slotNumber] = new PID((Element) tmpList.item(i));
             }
-        } catch (PIDSlotIDOutOfRangeException e) {
-            e.printStackTrace();
         }
     }
 
@@ -110,6 +110,10 @@ public class Motor extends CANDevice {
 
     public PID getPID(int slotID) {
         return this.pidValues[slotID];
+    }
+
+    public PID getPID() {
+        return this.pidValues[0];
     }
 
     public double getRampRate() {
